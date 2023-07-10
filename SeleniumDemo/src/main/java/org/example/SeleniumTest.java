@@ -8,25 +8,15 @@ import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
  * @author Allen
  */
 public class SeleniumTest {
-    public static Set<Cookie> cookies = new HashSet<>();
-
-    public static Properties properties = new Properties();
-
-    static {
-        //获取现有cookies
-        try {
-            properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("cookies.properties"));
-            properties.keySet().forEach(key -> cookies.add(new Cookie((String)key, properties.getProperty((String) key))));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public static Set<Cookie> cookies = new HashSet<>(123);
 
     @Test
     public void go() throws InterruptedException {
@@ -39,7 +29,6 @@ public class SeleniumTest {
         driver.quit();
         // 创建 ChromeOptions对象
         ChromeOptions options = new ChromeOptions();
-
 
 
         // 禁用CSS
@@ -58,9 +47,6 @@ public class SeleniumTest {
     }
 
     public void init(ChromeDriver driver) throws InterruptedException {
-        if(!cookies.isEmpty()){
-            return;
-        }
         //打开登录网页
         driver.get("https://passport.damai.cn/login?ru=https%3A%2F%2Fwww.damai.cn%2F");
         //创建窗口最大化
@@ -68,19 +54,9 @@ public class SeleniumTest {
         //登录并保存cookie
         Thread.sleep(5000L);
         cookies = driver.manage().getCookies();
-        cookies.forEach(cookie -> properties.setProperty(cookie.getName(), cookie.getValue()));
-        try {
-            FileOutputStream fos = new FileOutputStream("src/main/resources/cookies.properties");
-            OutputStreamWriter opw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
-            properties.store(opw, "测试用数据");
-            fos.close();
-            opw.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
-    public void log(ChromeDriver driver){
+    public void log(ChromeDriver driver) {
         //设置cookie并打开主界面
         driver.get("https://www.damai.cn/");
         cookies.forEach(cookie -> driver.manage().addCookie(cookie));
